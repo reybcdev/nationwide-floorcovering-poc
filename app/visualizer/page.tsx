@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { products } from '@/lib/mock-data'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
 import { Upload, RotateCcw, Save, Eye } from 'lucide-react'
@@ -38,10 +38,11 @@ export default function VisualizerPage() {
               <div className="relative aspect-video bg-muted rounded-t-lg overflow-hidden">
                 {/* Mock 3D Room Visualization */}
                 <div className="relative w-full h-full">
-                  <img
-                    src={currentRoom?.image}
+                  <Image
+                    src={currentRoom?.image || ''}
                     alt="Room Preview"
-                    className="w-full h-full object-cover opacity-80"
+                    fill
+                    className="object-cover opacity-80"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 bg-white/10 backdrop-blur-sm rounded-lg p-4">
@@ -85,12 +86,14 @@ export default function VisualizerPage() {
                 <button
                   key={room.id}
                   onClick={() => setRoomTemplate(room.id)}
-                  className={`aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`relative aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${
                     roomTemplate === room.id ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-muted'
                   }`}
                 >
-                  <img src={room.image} alt={room.name} className="w-full h-full object-cover" />
-                  <div className="p-2 bg-white text-center">
+                  <div className="relative w-full h-full">
+                    <Image src={room.image} alt={room.name} fill className="object-cover" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-white text-center">
                     <p className="text-sm font-medium">{room.name}</p>
                   </div>
                 </button>
@@ -107,11 +110,14 @@ export default function VisualizerPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <img
-                  src={selectedProduct.image}
-                  alt={selectedProduct.name}
-                  className="w-full aspect-[4/3] object-cover rounded-lg"
-                />
+                <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden">
+                  <Image
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <div>
                   <Badge variant="secondary" className="mb-2">
                     {selectedProduct.category}
@@ -139,11 +145,14 @@ export default function VisualizerPage() {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
+                    <div className="relative w-16 h-16 rounded overflow-hidden flex-shrink-0">
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{product.name}</p>
                       <p className="text-xs text-muted-foreground">{formatPrice(product.pricePerSqFt)}/sq ft</p>

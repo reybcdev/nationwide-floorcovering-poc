@@ -198,9 +198,9 @@ export const products: Product[] = [
     category: 'carpet',
     price: 2.99,
     pricePerSqFt: 2.99,
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+    image: 'https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=800&h=600&fit=crop',
     images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=800&h=600&fit=crop',
     ],
     description: 'Durable commercial-grade loop carpet perfect for high-traffic areas. Stain and fade resistant.',
     specifications: {

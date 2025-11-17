@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/ProductCard'
 import { products } from '@/lib/mock-data'
@@ -10,13 +11,27 @@ export default function HomePage() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-50 to-slate-100 py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+      <section className="relative py-32 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&h=1080&fit=crop&q=80"
+            alt="Beautiful modern living room with premium hardwood flooring"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-2xl">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight text-white">
               Transform Your Space with Premium Flooring
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl mb-8 text-white/90">
               Discover our extensive collection of hardwood, carpet, and vinyl flooring. 
               Visualize your perfect floor with our cutting-edge 3D room visualizer.
             </p>
@@ -28,7 +43,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/visualizer">
-                <Button size="lg" variant="outline" className="text-lg">
+                <Button size="lg" variant="secondary" className="text-lg">
                   Try Virtual Visualizer
                 </Button>
               </Link>
