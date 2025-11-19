@@ -206,7 +206,7 @@ export default function OdooProductsPage() {
           <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <p className="text-lg font-semibold mb-2">No products found</p>
           <p className="text-muted-foreground mb-4">
-            Click "Sync from Odoo" to import products from your Odoo ERP system
+            Click &quot;Sync from Odoo&quot; to import products from your Odoo ERP system
           </p>
           <Button onClick={syncProducts} disabled={syncing}>
             <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />

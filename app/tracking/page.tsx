@@ -68,7 +68,7 @@ export default function TrackingPage() {
     }
   }
 
-  const useDemoTracking = () => {
+  const loadDemoTracking = () => {
     setTrackingNumber(demoTrackingNumbers[carrier])
     setTimeout(() => {
       trackPackage()
@@ -154,9 +154,9 @@ export default function TrackingPage() {
 
             <div className="pt-4 border-t">
               <p className="text-sm text-muted-foreground mb-2">
-                Don't have a tracking number? Try a demo:
+                Don&apos;t have a tracking number? Try a demo:
               </p>
-              <Button onClick={useDemoTracking} variant="outline" size="sm">
+              <Button onClick={loadDemoTracking} variant="outline" size="sm">
                 <Package className="h-4 w-4 mr-2" />
                 Use Demo Tracking for {carrier}
               </Button>
@@ -315,7 +315,7 @@ export default function TrackingPage() {
                   variant="outline"
                   onClick={() => {
                     setCarrier(c)
-                    setTimeout(() => useDemoTracking(), 100)
+                    setTimeout(() => loadDemoTracking(), 100)
                   }}
                 >
                   Demo {c} Tracking
