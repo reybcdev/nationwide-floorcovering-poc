@@ -78,14 +78,11 @@ export async function generateEDI850FromOdoo(odooOrderId: number): Promise<strin
   const edi850 = generateEDI850({
     orderNumber: order.name,
     orderDate: order.date_order.split(' ')[0],
-    customer: {
-      name: partner.name,
-      email: partner.email || '',
-      address: partner.street || '',
-      city: partner.city || '',
-      state: partner.state_id ? partner.state_id[1] : '',
-      zip: partner.zip || '',
-    },
+    customerName: partner.name,
+    customerAddress: partner.street || '',
+    customerCity: partner.city || '',
+    customerState: partner.state_id ? partner.state_id[1] : '',
+    customerZip: partner.zip || '',
     items,
     total: order.amount_total,
   })
@@ -154,12 +151,11 @@ export async function generateEDI810FromOdoo(odooOrderId: number): Promise<strin
   const items = orderLines.map((line: any, index: number) => {
     const product = productMap.get(line.product_id[0])
     return {
-      lineNumber: index + 1,
       sku: product?.default_code || `PROD-${line.product_id[0]}`,
+      name: line.name,
       quantity: line.product_uom_qty,
       unitPrice: line.price_unit,
-      amount: line.price_subtotal,
-      description: line.name,
+      total: line.price_subtotal,
     }
   })
   
@@ -167,15 +163,9 @@ export async function generateEDI810FromOdoo(odooOrderId: number): Promise<strin
   const edi810 = generateEDI810({
     invoiceNumber: `INV-${order.name}`,
     invoiceDate: order.date_order.split(' ')[0],
-    orderNumber: order.name,
-    customer: {
-      name: partner.name,
-      email: partner.email || '',
-      address: partner.street || '',
-      city: partner.city || '',
-      state: partner.state_id ? partner.state_id[1] : '',
-      zip: partner.zip || '',
-    },
+    purchaseOrderNumber: order.name,
+    customerName: partner.name,
+    customerAddress: partner.street || '',
     items,
     subtotal: order.amount_untaxed,
     tax: order.amount_tax,
