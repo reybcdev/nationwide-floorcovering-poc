@@ -143,9 +143,11 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <Button size="lg" className="w-full mb-4">
-                Proceed to Checkout
-              </Button>
+              <Link href="/checkout">
+                <Button size="lg" className="w-full mb-4">
+                  Proceed to Checkout
+                </Button>
+              </Link>
 
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">

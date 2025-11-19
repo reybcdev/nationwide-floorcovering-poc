@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:odoo": "tsx scripts/test-odoo-connection.ts"
   },
   "dependencies": {
     "next": "14.2.13",
@@ -41,6 +42,8 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.13"
+    "eslint-config-next": "14.2.13",
+    "tsx": "^4.7.0",
+    "dotenv": "^16.4.5"
   }
 }

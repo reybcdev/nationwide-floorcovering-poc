@@ -38,11 +38,21 @@ This POC demonstrates all key features from the job requirements:
   - Contact information
   - DIY installation guides
 
-- **Shopping Cart**
+- **Shopping Cart & Checkout**
   - Persistent cart with Zustand state management
   - Square footage calculator
   - Real-time price updates
   - Easy cart management
+  - Complete checkout flow with Odoo ERP sync
+
+- **Odoo ERP EDI Integration** ⭐ NEW
+  - Real-time product catalog synchronization
+  - Automatic order creation in Odoo
+  - Customer data management
+  - Inventory level tracking
+  - EDI standards support (850, 810)
+  - Admin dashboard for monitoring
+  - Mock service for demo without Odoo installation
 
 ### 🎨 Design
 
@@ -61,6 +71,7 @@ This POC demonstrates all key features from the job requirements:
 - **Icons:** Lucide React
 - **State Management:** Zustand
 - **3D Visualization:** React Three Fiber & Three.js (ready for implementation)
+- **ERP Integration:** Odoo ERP with EDI support (Mock service included)
 
 ## 📦 Installation
 
@@ -88,6 +99,11 @@ nationwide-floorcovering-poc/
 │   ├── visualizer/          # Virtual room visualizer
 │   ├── installers/          # Installer directory
 │   ├── cart/                # Shopping cart
+│   ├── checkout/            # Checkout with Odoo sync
+│   ├── admin/
+│   │   └── odoo/           # Odoo ERP admin dashboard
+│   ├── api/
+│   │   └── odoo/           # Odoo API endpoints
 │   ├── layout.tsx           # Root layout
 │   └── globals.css          # Global styles
 ├── components/              # React components
@@ -98,8 +114,15 @@ nationwide-floorcovering-poc/
 ├── lib/                     # Utilities & data
 │   ├── utils.ts             # Helper functions
 │   ├── store.ts             # Zustand store
-│   └── mock-data.ts         # Mock product data
-└── public/                  # Static assets
+│   ├── mock-data.ts         # Mock product data
+│   └── odoo/               # Odoo ERP integration
+│       ├── types.ts         # TypeScript types
+│       ├── client.ts        # Odoo API client
+│       ├── mock-service.ts  # Mock Odoo for demo
+│       └── sync-helper.ts   # Sync utilities
+├── public/                  # Static assets
+├── ODOO_INTEGRATION.md     # Odoo integration guide
+└── .env.example            # Environment variables template
 ```
 
 ## 🎯 Key Pages
@@ -145,7 +168,23 @@ nationwide-floorcovering-poc/
 - Cart management
 - Price calculations
 - Order summary
-- Checkout flow (UI ready)
+- Checkout flow with Odoo sync
+
+### Checkout (`/checkout`)
+- Customer information form
+- Shipping address entry
+- Order summary and totals
+- **Odoo ERP sync option** - Demo checkbox to enable/disable
+- Real-time order creation in Odoo
+- Success confirmation with Odoo Order ID
+
+### Odoo Admin (`/admin/odoo`)
+- **Integration Dashboard** - Monitor ERP connection
+- **Products Tab** - View synchronized product catalog
+- **Orders Tab** - Track sales orders from Odoo
+- **Customers Tab** - Browse partner database
+- **Sync Status** - Manual sync trigger and status monitoring
+- Real-time EDI metrics and health monitoring
 
 ## 📊 Mock Data
 
@@ -177,24 +216,82 @@ All components from shadcn/ui:
 - Label
 - Slider
 
-## 🚧 Integration Ready
+## 🔌 Odoo ERP EDI Integration
 
-The POC is designed with integration points for:
+### ⚡ Live Integration Features
 
-### EDI/ERP Integration
-- Structured product data
-- Order management interfaces
-- Inventory tracking placeholders
+This POC includes a **fully functional** Odoo ERP integration:
+
+#### Real-Time Features:
+- ✅ **Product Catalog Sync** - Products from Odoo ERP displayed in e-commerce
+- ✅ **Automatic Order Creation** - Orders sent to Odoo on checkout
+- ✅ **Customer Management** - Customer data synchronized with Odoo partners
+- ✅ **Inventory Tracking** - Real-time stock levels from Odoo
+- ✅ **Admin Dashboard** - Monitor integration at `/admin/odoo`
+- ✅ **EDI Standards** - Support for EDI 850 (PO) and 810 (Invoice)
+
+#### Demo Mode:
+The integration includes a **mock Odoo service** that:
+- Simulates all Odoo API responses
+- Works without Odoo installation
+- Perfect for demonstrations
+- Includes realistic sample data
+
+#### How to Use:
+
+**Demo Mode (Default):**
+```bash
+# Just run the app - no Odoo required!
+npm run dev
+# Visit http://localhost:3000/admin/odoo
+```
+
+**Connect to Real Odoo:**
+```bash
+# 1. Copy environment template
+cp .env.example .env.local
+
+# 2. Configure Odoo credentials
+ODOO_URL=https://your-odoo-instance.com
+ODOO_DB=your_database
+ODOO_USERNAME=api_user
+ODOO_PASSWORD=api_password
+
+# 3. See ODOO_INTEGRATION.md for detailed setup
+```
+
+#### API Endpoints:
+
+- `GET /api/odoo/products` - Fetch product catalog
+- `POST /api/odoo/orders` - Create sales order
+- `POST /api/odoo/orders/[id]/confirm` - Confirm order
+- `GET /api/odoo/partners` - Get customer list
+- `GET /api/odoo/sync` - Get sync status
+- `POST /api/odoo/sync` - Trigger manual sync
+
+#### Testing the Integration:
+
+1. Browse products (sourced from mock Odoo)
+2. Add items to cart
+3. Go to checkout
+4. **Enable "Sync to Odoo" checkbox**
+5. Complete order
+6. See Odoo Order ID on confirmation
+7. Visit `/admin/odoo` to view in ERP
+
+See **[ODOO_INTEGRATION.md](./ODOO_INTEGRATION.md)** for complete documentation.
+
+## 🚧 Other Integration Points
 
 ### Third-Party Freight
-- Shipping calculator UI
+- Shipping calculator UI ready
 - Multiple carrier support
 - Real-time tracking placeholders
 
 ### Payment Processing
-- Checkout flow ready
+- Checkout flow complete
 - Multiple payment methods UI
-- Secure payment integration points
+- Secure payment integration points ready
 
 ## 📱 Responsive Design
 
@@ -276,11 +373,11 @@ This is a proof of concept for demonstration purposes.
 ✅ Virtual room visualization (UI complete, 3D ready)  
 ✅ Third-party freight integration (UI ready)  
 ✅ Installation resources  
-✅ EDI/ERP integration (data structures ready)  
+✅ **EDI/ERP integration** ⭐ **FULLY IMPLEMENTED with Odoo**  
 ✅ Modern minimalist design  
 ✅ E-commerce functionality  
 ✅ Responsive design  
-✅ Shopping cart  
+✅ Shopping cart & checkout  
 
 ## 📞 Support
 

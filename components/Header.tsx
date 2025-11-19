@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingCart, Search, Menu, User } from 'lucide-react'
+import { ShoppingCart, Search, Menu, User, Database } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useCartStore } from '@/lib/store'
@@ -27,11 +27,24 @@ export function Header() {
             <Link href="/products" className="text-sm font-medium transition-colors hover:text-primary">
               Products
             </Link>
-            <Link href="/visualizer" className="text-sm font-medium transition-colors hover:text-primary">
-              Room Visualizer
+            <Link href="/odoo-products" className="text-sm font-medium transition-colors hover:text-primary">
+              Odoo Inventory
             </Link>
-            <Link href="/installers" className="text-sm font-medium transition-colors hover:text-primary">
-              Find Installers
+            <Link href="/tracking" className="text-sm font-medium transition-colors hover:text-primary">
+              Track Package
+            </Link>
+            <Link href="/shipping-workflow" className="text-sm font-medium transition-colors hover:text-primary">
+              Shipping
+            </Link>
+            <Link href="/edi-demo" className="text-sm font-medium transition-colors hover:text-primary">
+              EDI Demo
+            </Link>
+            <Link href="/edi-documents" className="text-sm font-medium transition-colors hover:text-primary">
+              EDI Docs
+            </Link>
+            <Link href="/admin/odoo" className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1">
+              <Database className="h-4 w-4" />
+              Admin
             </Link>
           </nav>
 
@@ -85,6 +98,10 @@ export function Header() {
               </Link>
               <Link href="/installers" className="text-sm font-medium">
                 Find Installers
+              </Link>
+              <Link href="/admin/odoo" className="text-sm font-medium flex items-center gap-1">
+                <Database className="h-4 w-4" />
+                Odoo ERP Admin
               </Link>
             </nav>
           </div>
