@@ -3,7 +3,7 @@
 export interface Product {
   id: string
   name: string
-  category: 'hardwood' | 'carpet' | 'vinyl'
+  category: 'hardwood' | 'carpet' | 'vinyl' | 'other'
   price: number
   pricePerSqFt: number
   image: string
@@ -16,12 +16,12 @@ export interface Product {
     length?: string
     finish?: string
     color: string
-    durabilityRating: number
-    moistureResistance: string
-    scratchResistance: string
-    roomSuitability: string[]
-    installation: string
-    warranty: string
+    durabilityRating?: number
+    moistureResistance?: string
+    scratchResistance?: string
+    roomSuitability?: string[]
+    installation?: string
+    warranty?: string
   }
   inStock: boolean
   rating: number
