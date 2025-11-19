@@ -51,22 +51,12 @@ export async function PATCH(request: NextRequest) {
     }
 
     const odooClient = getOdooClient()
-    const result = await odooClient.updateProductInventory(productId, quantity)
+    await odooClient.updateProductStock(productId, quantity)
 
-    if (result) {
-      return NextResponse.json({
-        success: true,
-        message: 'Product inventory updated successfully',
-      })
-    } else {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Product not found',
-        },
-        { status: 404 }
-      )
-    }
+    return NextResponse.json({
+      success: true,
+      message: 'Product inventory updated successfully',
+    })
   } catch (error) {
     console.error('Error updating Odoo product:', error)
     return NextResponse.json(
