@@ -15,14 +15,27 @@ export interface SyncedProduct {
   price: number
   pricePerSqFt: number
   image: string
+  images: string[]
   description: string
   inStock: boolean
   stockQuantity: number
   brand: string
+  rating: number
+  reviewCount: number
+  certifications: string[]
   specifications: {
     color: string
     material?: string
     warranty?: string
+    thickness?: string
+    width?: string
+    length?: string
+    finish?: string
+    durabilityRating?: number
+    moistureResistance?: string
+    scratchResistance?: string
+    roomSuitability?: string[]
+    installation?: string
   }
   lastSyncedAt: string
 }
@@ -54,17 +67,135 @@ function mapCategory(odooCategory: string): 'hardwood' | 'carpet' | 'vinyl' | 'o
 }
 
 /**
- * Get default product image based on category
+ * Get diverse product images based on category and product name
  */
-function getDefaultImage(category: string): string {
-  const images = {
-    hardwood: 'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=800&h=600&fit=crop',
-    carpet: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=600&fit=crop',
-    vinyl: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&h=600&fit=crop',
-    other: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
+function getProductImages(productName: string, category: string): string[] {
+  const nameLower = productName.toLowerCase()
+  
+  // Hardwood images - diverse wood types and finishes
+  const hardwoodImages = {
+    oak: [
+      'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=800&h=600&fit=crop',
+    ],
+    walnut: [
+      'https://images.unsplash.com/photo-1615876234886-fd9a39fda97f?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1615874959474-d609969a20ed?w=800&h=600&fit=crop',
+    ],
+    maple: [
+      'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=800&h=600&fit=crop&sat=-20',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&h=600&fit=crop',
+    ],
+    cherry: [
+      'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=800&h=600&fit=crop&sat=20',
+      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800&h=600&fit=crop',
+    ],
+    default: [
+      'https://images.unsplash.com/photo-1615971677499-5467cbab01c0?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+    ],
   }
   
-  return images[category as keyof typeof images] || images.other
+  // Carpet images - diverse colors and textures
+  const carpetImages = {
+    beige: [
+      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1615529182904-14819c35db37?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&h=600&fit=crop',
+    ],
+    gray: [
+      'https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=800&h=600&fit=crop',
+    ],
+    blue: [
+      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=600&fit=crop&sat=30&hue=200',
+      'https://images.unsplash.com/photo-1615529182904-14819c35db37?w=800&h=600&fit=crop&sat=30&hue=200',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&h=600&fit=crop&sat=30&hue=200',
+    ],
+    brown: [
+      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=600&fit=crop&sat=20&hue=30',
+      'https://images.unsplash.com/photo-1615529182904-14819c35db37?w=800&h=600&fit=crop&sat=20&hue=30',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop',
+    ],
+    default: [
+      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1615529182904-14819c35db37?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&h=600&fit=crop',
+    ],
+  }
+  
+  // Vinyl images - diverse styles and colors
+  const vinylImages = {
+    gray: [
+      'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop',
+    ],
+    white: [
+      'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&h=600&fit=crop&brightness=10',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&h=600&fit=crop&brightness=10',
+    ],
+    brown: [
+      'https://images.unsplash.com/photo-1615876234886-fd9a39fda97f?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=600&fit=crop&sat=20&hue=30',
+      'https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800&h=600&fit=crop',
+    ],
+    stone: [
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=800&h=600&fit=crop',
+    ],
+    tile: [
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=800&h=600&fit=crop',
+    ],
+    default: [
+      'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=600&fit=crop',
+      'https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop',
+    ],
+  }
+  
+  // Select images based on category and product name keywords
+  if (category === 'hardwood') {
+    if (nameLower.includes('oak')) return hardwoodImages.oak
+    if (nameLower.includes('walnut')) return hardwoodImages.walnut
+    if (nameLower.includes('maple')) return hardwoodImages.maple
+    if (nameLower.includes('cherry')) return hardwoodImages.cherry
+    return hardwoodImages.default
+  }
+  
+  if (category === 'carpet') {
+    if (nameLower.includes('beige') || nameLower.includes('tan')) return carpetImages.beige
+    if (nameLower.includes('gray') || nameLower.includes('grey') || nameLower.includes('charcoal')) return carpetImages.gray
+    if (nameLower.includes('blue')) return carpetImages.blue
+    if (nameLower.includes('brown')) return carpetImages.brown
+    return carpetImages.default
+  }
+  
+  if (category === 'vinyl') {
+    if (nameLower.includes('stone') || nameLower.includes('marble') || nameLower.includes('slate')) return vinylImages.stone
+    if (nameLower.includes('tile')) return vinylImages.tile
+    if (nameLower.includes('gray') || nameLower.includes('grey')) return vinylImages.gray
+    if (nameLower.includes('white') || nameLower.includes('light')) return vinylImages.white
+    if (nameLower.includes('brown') || nameLower.includes('dark')) return vinylImages.brown
+    return vinylImages.default
+  }
+  
+  // Fallback for other categories
+  return [
+    'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&h=600&fit=crop',
+    'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&h=600&fit=crop',
+  ]
 }
 
 /**
@@ -72,7 +203,54 @@ function getDefaultImage(category: string): string {
  */
 export function transformOdooProduct(odooProduct: OdooProduct): SyncedProduct {
   const category = mapCategory(odooProduct.categ_id?.[1] || 'other')
+  const productImages = getProductImages(odooProduct.name, category)
   
+  // Generate specification details based on category
+  const getRoomSuitability = (cat: string): string[] => {
+    if (cat === 'hardwood') return ['Living Room', 'Dining Room', 'Bedroom', 'Office']
+    if (cat === 'carpet') return ['Bedroom', 'Living Room', 'Basement']
+    if (cat === 'vinyl') return ['Kitchen', 'Bathroom', 'Basement', 'Laundry Room']
+    return ['Living Room', 'Bedroom']
+  }
+
+  const getInstallation = (cat: string): string => {
+    if (cat === 'hardwood') return 'Nail-down or glue-down'
+    if (cat === 'carpet') return 'Stretch-in'
+    if (cat === 'vinyl') return 'Click-lock floating'
+    return 'Professional installation recommended'
+  }
+
+  const getMoistureResistance = (cat: string): string => {
+    if (cat === 'vinyl') return 'Waterproof'
+    if (cat === 'hardwood') return 'Medium'
+    if (cat === 'carpet') return 'Low'
+    return 'Medium'
+  }
+
+  // Extract color from product name
+  const getColor = (name: string): string => {
+    const nameLower = name.toLowerCase()
+    
+    // Common wood colors
+    if (nameLower.includes('walnut') || nameLower.includes('dark brown')) return 'Dark Walnut'
+    if (nameLower.includes('cherry')) return 'Cherry'
+    if (nameLower.includes('maple')) return 'Natural Maple'
+    if (nameLower.includes('oak')) return 'Natural Oak'
+    
+    // Common carpet/vinyl colors
+    if (nameLower.includes('beige') || nameLower.includes('tan')) return 'Beige'
+    if (nameLower.includes('gray') || nameLower.includes('grey')) return 'Gray'
+    if (nameLower.includes('charcoal')) return 'Charcoal'
+    if (nameLower.includes('blue')) return 'Blue'
+    if (nameLower.includes('brown')) return 'Brown'
+    if (nameLower.includes('white')) return 'White'
+    if (nameLower.includes('black')) return 'Black'
+    if (nameLower.includes('cream')) return 'Cream'
+    if (nameLower.includes('stone')) return 'Stone'
+    
+    return 'Natural'
+  }
+
   return {
     id: `odoo-${odooProduct.id}`,
     odooId: odooProduct.id,
@@ -81,15 +259,25 @@ export function transformOdooProduct(odooProduct: OdooProduct): SyncedProduct {
     category,
     price: odooProduct.list_price || 0,
     pricePerSqFt: odooProduct.list_price || 0,
-    image: getDefaultImage(category),
+    image: productImages[0],
+    images: productImages,
     description: odooProduct.description_sale || `Premium ${category} flooring from Odoo`,
     inStock: (odooProduct.qty_available || 0) > 0,
     stockQuantity: odooProduct.qty_available || 0,
-    brand: 'Odoo Floorcovering',
+    brand: 'Nationwide Floorcovering',
+    rating: 4.5, // Default rating, TODO: Integrate with review system
+    reviewCount: 0, // Default review count, TODO: Integrate with review system
+    certifications: ['Quality Certified', 'Eco-Friendly'],
     specifications: {
-      color: 'Natural',
+      color: getColor(odooProduct.name),
       material: odooProduct.categ_id?.[1] || 'Premium Material',
       warranty: '25 years',
+      thickness: category === 'hardwood' ? '3/4 inch' : category === 'vinyl' ? '8mm' : '1/2 inch',
+      durabilityRating: category === 'vinyl' ? 5 : 4,
+      moistureResistance: getMoistureResistance(category),
+      scratchResistance: category === 'vinyl' ? 'Very High' : 'High',
+      roomSuitability: getRoomSuitability(category),
+      installation: getInstallation(category),
     },
     lastSyncedAt: new Date().toISOString(),
   }

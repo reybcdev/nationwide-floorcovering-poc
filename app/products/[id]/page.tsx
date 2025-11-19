@@ -1,33 +1,92 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { products, reviews } from '@/lib/mock-data'
+import type { SyncedProduct } from '@/lib/odoo/product-sync'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCartStore } from '@/lib/store'
 import { formatPrice } from '@/lib/utils'
-import { Star, ShoppingCart, Check, ArrowLeft, Truck, Shield } from 'lucide-react'
+import { Star, ShoppingCart, Check, ArrowLeft, Truck, Shield, RefreshCw } from 'lucide-react'
 
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const product = products.find(p => p.id === params.id)
-  const productReviews = reviews.filter(r => r.productId === params.id)
+  const [product, setProduct] = useState<SyncedProduct | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const addItem = useCartStore(state => state.addItem)
   
   const [selectedImage, setSelectedImage] = useState(0)
   const [sqFeet, setSqFeet] = useState(100)
   const [addedToCart, setAddedToCart] = useState(false)
 
-  if (!product) {
+  // Fetch product from Odoo
+  useEffect(() => {
+    if (!params.id) return
+    
+    const abortController = new AbortController()
+    let mounted = true
+    
+    const fetchProduct = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        const response = await fetch(`/api/sync/products/${params.id}`, {
+          signal: abortController.signal
+        })
+        const data = await response.json()
+        
+        // Only update state if component is still mounted
+        if (!mounted) return
+        
+        if (data.success) {
+          setProduct(data.data)
+        } else {
+          setError(data.message || 'Failed to load product')
+        }
+      } catch (err) {
+        // Ignore abort errors
+        if (err instanceof Error && err.name === 'AbortError') {
+          return
+        }
+        
+        if (!mounted) return
+        setError(err instanceof Error ? err.message : 'Failed to load product')
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+    
+    fetchProduct()
+    
+    // Cleanup function
+    return () => {
+      mounted = false
+      abortController.abort()
+    }
+  }, [params.id])
+
+  if (loading) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold mb-4">Product not found</h1>
+        <RefreshCw className="h-12 w-12 animate-spin mx-auto text-primary mb-4" />
+        <p className="text-lg text-muted-foreground">Loading product...</p>
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold mb-4">{error || 'Product not found'}</h1>
         <Link href="/products">
           <Button>Back to Products</Button>
         </Link>
@@ -200,46 +259,19 @@ export default function ProductDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Reviews */}
+        {/* Reviews - Coming Soon */}
         <Card>
           <CardHeader>
-            <CardTitle>Customer Reviews ({productReviews.length})</CardTitle>
+            <CardTitle>Customer Reviews</CardTitle>
           </CardHeader>
           <CardContent>
-            {productReviews.length > 0 ? (
-              <div className="space-y-6">
-                {productReviews.map((review) => (
-                  <div key={review.id} className="border-b last:border-0 pb-6 last:pb-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="font-semibold">{review.userName}</div>
-                        {review.verifiedPurchase && (
-                          <Badge variant="secondary" className="text-xs mt-1">Verified Purchase</Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-4 w-4 ${
-                              star <= review.overallRating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <h4 className="font-medium mb-2">{review.title}</h4>
-                    <p className="text-sm text-muted-foreground mb-2">{review.content}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-                      <span>{review.helpfulVotes} people found this helpful</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
-            )}
+            <div className="text-center py-8">
+              <Star className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-30" />
+              <p className="text-muted-foreground mb-2">Customer reviews coming soon!</p>
+              <p className="text-sm text-muted-foreground">
+                We&apos;re working on integrating a review system with Odoo.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, ShoppingCart } from 'lucide-react'
-import { Product } from '@/lib/mock-data'
+import type { SyncedProduct } from '@/lib/odoo/product-sync'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { formatPrice } from '@/lib/utils'
 
 interface ProductCardProps {
-  product: Product
+  product: SyncedProduct
 }
 
 export function ProductCard({ product }: ProductCardProps) {

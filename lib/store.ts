@@ -1,15 +1,15 @@
 import { create } from 'zustand'
-import { Product } from './mock-data'
+import type { SyncedProduct } from './odoo/product-sync'
 
 interface CartItem {
-  product: Product
+  product: SyncedProduct
   quantity: number
   sqFeet: number
 }
 
 interface CartStore {
   items: CartItem[]
-  addItem: (product: Product, sqFeet: number) => void
+  addItem: (product: SyncedProduct, sqFeet: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void

@@ -1,12 +1,61 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/ProductCard'
-import { products } from '@/lib/mock-data'
+import type { SyncedProduct } from '@/lib/odoo/product-sync'
 import { ArrowRight, Star, Shield, Truck, Sparkles } from 'lucide-react'
 
 export default function HomePage() {
-  const featuredProducts = products.slice(0, 3)
+  const [featuredProducts, setFeaturedProducts] = useState<SyncedProduct[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const abortController = new AbortController()
+    let mounted = true
+    
+    const fetchFeaturedProducts = async () => {
+      try {
+        const response = await fetch('/api/sync/products?limit=20', {
+          signal: abortController.signal
+        })
+        const data = await response.json()
+        
+        // Only update state if component is still mounted
+        if (!mounted) return
+        
+        if (data.success) {
+          // Get first 3 products as featured
+          const featured = data.data.products.slice(0, 3)
+          setFeaturedProducts(featured)
+        } else {
+          console.error('Failed to load featured products:', data.message, data.errors)
+        }
+      } catch (err) {
+        // Ignore abort errors
+        if (err instanceof Error && err.name === 'AbortError') {
+          return
+        }
+        
+        if (!mounted) return
+        console.error('Failed to fetch featured products:', err)
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+    
+    fetchFeaturedProducts()
+    
+    // Cleanup function
+    return () => {
+      mounted = false
+      abortController.abort()
+    }
+  }, [])
 
   return (
     <div className="flex flex-col">
@@ -113,9 +162,19 @@ export default function HomePage() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
+            {loading ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">Loading featured products...</p>
+              </div>
+            ) : featuredProducts.length > 0 ? (
+              featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No products available at the moment.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
