@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllCustomersFromOdoo } from '@/lib/odoo/customer-sync'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/sync/customers
  * Sync customers from Odoo ERP

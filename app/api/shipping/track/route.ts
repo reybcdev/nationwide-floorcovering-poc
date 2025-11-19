@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { trackShipment } from '@/lib/carriers/carrier-integration'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/shipping/track?trackingNumber=xxx&carrier=UPS
  * Track shipment status

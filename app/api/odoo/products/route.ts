@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getOdooClient } from '@/lib/odoo/client'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/odoo/products
  * Fetch products from Odoo ERP

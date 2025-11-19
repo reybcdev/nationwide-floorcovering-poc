@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getOdooClient } from '@/lib/odoo/client'
 import type { EDIOrder } from '@/lib/odoo/types'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/odoo/orders
  * Fetch sale orders from Odoo ERP

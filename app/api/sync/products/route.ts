@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { syncProductsFromOdoo } from '@/lib/odoo/product-sync'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * GET /api/sync/products
  * Sync products from Odoo ERP to e-commerce

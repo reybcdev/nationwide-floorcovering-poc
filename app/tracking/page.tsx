@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Package, Search, MapPin, CheckCircle, Clock, Truck, AlertCircle } from 'lucide-react'
 
-export default function TrackingPage() {
+function TrackingContent() {
   const searchParams = useSearchParams()
   const [trackingNumber, setTrackingNumber] = useState('')
   const [carrier, setCarrier] = useState<'UPS' | 'FEDEX' | 'USPS'>('FEDEX')
@@ -368,5 +368,23 @@ export default function TrackingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function TrackingPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-card border rounded-lg p-12 text-center">
+            <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4 animate-pulse" />
+            <h3 className="text-xl font-semibold mb-2">Loading...</h3>
+            <p className="text-muted-foreground">Please wait while we load the tracking page</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <TrackingContent />
+    </Suspense>
   )
 }
