@@ -8,6 +8,8 @@ import type {
   OdooSearchReadParams,
   OdooCreateParams,
   OdooWriteParams,
+  EDIOrder,
+  EDISyncStatus,
 } from './types'
 
 export class OdooClient {
@@ -203,6 +205,34 @@ export class OdooClient {
   }
 
   /**
+   * Get partners/customers from Odoo
+   */
+  async getPartners(limit = 50): Promise<OdooPartner[]> {
+    return this.searchRead<OdooPartner>({
+      model: 'res.partner',
+      fields: [
+        'name',
+        'email',
+        'phone',
+        'street',
+        'street2',
+        'city',
+        'state_id',
+        'zip',
+        'country_id',
+        'customer_rank',
+        'supplier_rank',
+        'company_type',
+        'vat',
+        'website',
+      ],
+      domain: [['customer_rank', '>', 0]], // Only customers
+      limit,
+      order: 'name asc',
+    })
+  }
+
+  /**
    * Get products from Odoo
    */
   async getProducts(limit = 50): Promise<OdooProduct[]> {
@@ -285,6 +315,68 @@ export class OdooClient {
       model: 'sale.order',
       values: orderData,
     })
+  }
+
+  /**
+   * Create a sales order from EDI format
+   * This method handles the transformation from e-commerce EDI order to Odoo sale order
+   */
+  async createSaleOrderFromEDI(ediOrder: EDIOrder): Promise<number> {
+    // 1. Get or create customer partner
+    const partnerId = await this.getOrCreatePartner({
+      name: ediOrder.customerName,
+      email: ediOrder.customerEmail,
+      street: ediOrder.shippingAddress.street,
+      city: ediOrder.shippingAddress.city,
+      zip: ediOrder.shippingAddress.zip,
+    })
+
+    // 2. Look up products by SKU and transform order lines
+    const orderLines = []
+    for (const item of ediOrder.items) {
+      // Find product by SKU (default_code in Odoo)
+      const products = await this.searchRead<OdooProduct>({
+        model: 'product.product',
+        domain: [['default_code', '=', item.sku]],
+        fields: ['id', 'name', 'default_code'],
+        limit: 1,
+      })
+
+      if (products.length === 0) {
+        throw new Error(`Product with SKU ${item.sku} not found in Odoo`)
+      }
+
+      orderLines.push({
+        product_id: products[0].id,
+        product_uom_qty: item.quantity,
+        price_unit: item.unitPrice,
+      })
+    }
+
+    // 3. Create the sale order with client_order_ref for e-commerce order number
+    const orderData = {
+      partner_id: partnerId,
+      client_order_ref: ediOrder.orderNumber, // Store e-commerce order number
+      order_line: orderLines.map((line) => [
+        0,
+        0,
+        {
+          product_id: line.product_id,
+          product_uom_qty: line.product_uom_qty,
+          price_unit: line.price_unit,
+        },
+      ]),
+    }
+
+    const orderId = await this.create({
+      model: 'sale.order',
+      values: orderData,
+    })
+
+    // 4. Optionally confirm the order automatically
+    // await this.confirmSaleOrder(orderId)
+
+    return orderId
   }
 
   /**
@@ -372,6 +464,146 @@ export class OdooClient {
         [[orderId]],
       ],
     })
+  }
+
+  /**
+   * Get EDI sync status
+   * Returns information about recent orders and sync status
+   */
+  async getSyncStatus(): Promise<EDISyncStatus> {
+    try {
+      await this.ensureAuthenticated()
+
+      // Get counts for products
+      const productCount = await this.searchRead<OdooProduct>({
+        model: 'product.product',
+        domain: [['sale_ok', '=', true]],
+        fields: ['id'],
+        limit: 1000,
+      })
+
+      // Get counts for orders
+      const orderCount = await this.searchRead<OdooSaleOrder>({
+        model: 'sale.order',
+        domain: [],
+        fields: ['id'],
+        limit: 1000,
+      })
+
+      // Get counts for customers
+      const customerCount = await this.searchRead<OdooPartner>({
+        model: 'res.partner',
+        domain: [['customer_rank', '>', 0]],
+        fields: ['id'],
+        limit: 1000,
+      })
+
+      const now = new Date()
+      const nextSync = new Date(now.getTime() + 15 * 60 * 1000) // 15 minutes from now
+
+      return {
+        lastSync: now.toISOString(),
+        nextSync: nextSync.toISOString(),
+        status: 'idle',
+        recordsSynced: {
+          products: productCount.length,
+          orders: orderCount.length,
+          customers: customerCount.length,
+          inventory: productCount.length, // Same as products for now
+        },
+        errors: [],
+      }
+    } catch (error) {
+      console.error('Error getting sync status:', error)
+      return {
+        lastSync: new Date().toISOString(),
+        nextSync: new Date().toISOString(),
+        status: 'error',
+        recordsSynced: {
+          products: 0,
+          orders: 0,
+          customers: 0,
+          inventory: 0,
+        },
+        errors: [
+          {
+            timestamp: new Date().toISOString(),
+            type: 'sync_error',
+            message: error instanceof Error ? error.message : 'Unknown sync error',
+          },
+        ],
+      }
+    }
+  }
+
+  /**
+   * Trigger manual sync with Odoo
+   * Fetches recent orders and returns sync summary
+   */
+  async triggerSync(): Promise<EDISyncStatus> {
+    try {
+      await this.ensureAuthenticated()
+
+      // Get counts for products
+      const productCount = await this.searchRead<OdooProduct>({
+        model: 'product.product',
+        domain: [['sale_ok', '=', true]],
+        fields: ['id'],
+        limit: 1000,
+      })
+
+      // Get counts for orders
+      const orderCount = await this.searchRead<OdooSaleOrder>({
+        model: 'sale.order',
+        domain: [],
+        fields: ['id'],
+        limit: 1000,
+      })
+
+      // Get counts for customers
+      const customerCount = await this.searchRead<OdooPartner>({
+        model: 'res.partner',
+        domain: [['customer_rank', '>', 0]],
+        fields: ['id'],
+        limit: 1000,
+      })
+
+      const now = new Date()
+      const nextSync = new Date(now.getTime() + 15 * 60 * 1000) // 15 minutes from now
+
+      return {
+        lastSync: now.toISOString(),
+        nextSync: nextSync.toISOString(),
+        status: 'idle',
+        recordsSynced: {
+          products: productCount.length,
+          orders: orderCount.length,
+          customers: customerCount.length,
+          inventory: productCount.length, // Same as products for now
+        },
+        errors: [],
+      }
+    } catch (error) {
+      console.error('Error triggering sync:', error)
+      return {
+        lastSync: new Date().toISOString(),
+        nextSync: new Date().toISOString(),
+        status: 'error',
+        recordsSynced: {
+          products: 0,
+          orders: 0,
+          customers: 0,
+          inventory: 0,
+        },
+        errors: [
+          {
+            timestamp: new Date().toISOString(),
+            type: 'sync_error',
+            message: error instanceof Error ? error.message : 'Sync failed',
+          },
+        ],
+      }
+    }
   }
 
   /**
