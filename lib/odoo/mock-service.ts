@@ -291,26 +291,29 @@ export class MockOdooService {
     const lineIds: number[] = []
     for (const item of ediOrder.items) {
       const product = this.products.find((p) => p.default_code === item.sku)
-      if (product) {
-        const lineId = this.orderLines.length + 3001
-        const orderLine: OdooOrderLine = {
-          id: lineId,
-          order_id: [newOrderId, newOrder.name],
-          product_id: [product.id, product.name],
-          name: item.productName,
-          product_uom_qty: item.quantity,
-          qty_delivered: 0,
-          qty_invoiced: 0,
-          price_unit: item.unitPrice,
-          price_subtotal: item.total,
-          price_total: item.total * 1.0875, // With tax
-          discount: 0,
-          tax_id: [1],
-          product_uom: [1, 'Square Feet'],
-        }
-        this.orderLines.push(orderLine)
-        lineIds.push(lineId)
+      
+      if (!product) {
+        throw new Error(`Product with SKU ${item.sku} not found in Odoo`)
       }
+      
+      const lineId = this.orderLines.length + 3001
+      const orderLine: OdooOrderLine = {
+        id: lineId,
+        order_id: [newOrderId, newOrder.name],
+        product_id: [product.id, product.name],
+        name: item.productName,
+        product_uom_qty: item.quantity,
+        qty_delivered: 0,
+        qty_invoiced: 0,
+        price_unit: item.unitPrice,
+        price_subtotal: item.total,
+        price_total: item.total * 1.0875, // With tax
+        discount: 0,
+        tax_id: [1],
+        product_uom: [1, 'Square Feet'],
+      }
+      this.orderLines.push(orderLine)
+      lineIds.push(lineId)
     }
 
     newOrder.order_line = lineIds
@@ -319,6 +322,9 @@ export class MockOdooService {
     // Update sync status
     this.syncStatus.recordsSynced.orders++
     this.syncStatus.lastSync = new Date().toISOString()
+
+    // Confirm the order automatically
+    await this.confirmSaleOrder(newOrderId)
 
     return newOrderId
   }

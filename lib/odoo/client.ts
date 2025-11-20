@@ -373,8 +373,8 @@ export class OdooClient {
       values: orderData,
     })
 
-    // 4. Optionally confirm the order automatically
-    // await this.confirmSaleOrder(orderId)
+    // 4. Confirm the order automatically to move it from quotation to sales order
+    await this.confirmSaleOrder(orderId)
 
     return orderId
   }

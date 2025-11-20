@@ -52,14 +52,32 @@ export function convertCartToEDIOrder(
     customerEmail: customerInfo.email,
     shippingAddress: customerInfo.shippingAddress,
     billingAddress: customerInfo.billingAddress || customerInfo.shippingAddress,
-    items: cartItems.map((item) => ({
-      sku: `SKU-${item.product.id.padStart(6, '0')}`,
-      productName: item.product.name,
-      quantity: item.quantity,
-      unitPrice: item.product.pricePerSqFt,
-      sqFeet: item.sqFeet,
-      total: item.product.pricePerSqFt * item.sqFeet,
-    })),
+    items: cartItems.map((item) => {
+      // Use the product's SKU field if available (for Odoo synced products),
+      // otherwise generate SKU from product ID
+      let sku: string
+      
+      if ('sku' in item.product && item.product.sku) {
+        // Product has a SKU field (Odoo synced product) - use it directly
+        sku = item.product.sku as string
+      } else {
+        // Generate SKU from product ID (regular products)
+        let numericId = item.product.id
+        if (numericId.startsWith('odoo-')) {
+          numericId = numericId.replace('odoo-', '')
+        }
+        sku = `SKU-${numericId.padStart(6, '0')}`
+      }
+      
+      return {
+        sku,
+        productName: item.product.name,
+        quantity: item.quantity,
+        unitPrice: item.product.pricePerSqFt,
+        sqFeet: item.sqFeet,
+        total: item.product.pricePerSqFt * item.sqFeet,
+      }
+    }),
     subtotal,
     tax,
     shipping,
